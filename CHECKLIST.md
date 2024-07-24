@@ -67,6 +67,10 @@
 [X] Setup Github OAuth
 [X] Test Github SignIn
 [X] Drizzle Adapter
+
+Drizzle Adapter Source Code
+https://github.com/nextauthjs/next-auth/blob/main/packages/adapter-drizzle/src/lib/pg.ts
+
 [X] AuthJS Callbacks
 [X] Extend Session Information
 [X] Extend Typescript Types
@@ -118,3 +122,42 @@ if we make an acc with github -> we can link google to that same email
 [X] Protect Pages With Middleware
 [X] The Problem With The Crypto Module
 [X] The `auth.config.ts` File
+
+== PART 6 ==
+
+[X] User Roles
+[X] How to create an admin user
+[X] Option 1 - The process.env method
+[X] Option 2 - The process.env method (extended)
+[X] Option 3 - Manually edit in SQL Console
+[X] Option 4 - Create Admin Email Table
+(continue from here)
+[X] Option 5 - ADMIN Dashboard
+[X] Email Verification Checkbox
+[X] Email Verification Action
+[X] Role Change Select
+[X] Role Change Action
+[X] Discussion - Don't allow admins to edit each other
+
+[X] Email Time - Nodemailer
+[X] Google Cloud Console
+[X] OAuth Playground
+[X] Setup Transporter (Nodemailer Instance)
+[X] Verification Token Action
+[X] Discussion Delete Verification Tokens **
+[X] Auth Config Deny Email Verification
+[X] Forgot Password UI
+[X] Forgot Password Action (deter OAauth)
+[X] Reset Password Form
+[X] Reverify in Server Action
+[X] Again with **
+
+Extensions:
+
+TRY THESE
+
+1. delete user (as an admin)
+2. manage verification tokens (delete them as needed)
+3. add update to user.images
+4. add another OAuth provider
+5. add a third role

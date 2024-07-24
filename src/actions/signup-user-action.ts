@@ -6,6 +6,10 @@ import { SignupSchema } from "@/validators/signup-validator";
 import db from "@/drizzle";
 import { lower, users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
+import { USER_ROLES } from "@/lib/constants";
+import { findAdminUserEmailAddresses } from "@/resources/admin-user-email-address-queries";
+import { createVerificationTokenAction } from "@/actions/create-verification-token-action";
+import { sendSignupUserEmail } from "@/actions/mail/send-signup-user-email";
 
 type Res =
   | { success: true }
@@ -25,13 +29,38 @@ export async function signupUserAction(values: unknown): Promise<Res> {
 
   try {
     const existingUser = await db
-      .select({ id: users.id })
+      .select({
+        id: users.id,
+        email: users.email,
+        emailVerified: users.emailVerified,
+      })
       .from(users)
       .where(eq(lower(users.email), email.toLowerCase()))
       .then((res) => res[0] ?? null);
 
     if (existingUser?.id) {
-      return { success: false, error: "Email already exists", statusCode: 409 };
+      if (!existingUser.emailVerified) {
+        const verificationToken = await createVerificationTokenAction(
+          existingUser.email,
+        );
+
+        await sendSignupUserEmail({
+          email: existingUser.email,
+          token: verificationToken.token,
+        });
+
+        return {
+          success: false,
+          error: "User exists but not verified. Verification link resent",
+          statusCode: 409,
+        };
+      } else {
+        return {
+          success: false,
+          error: "Email already exists",
+          statusCode: 409,
+        };
+      }
     }
   } catch (err) {
     console.error(err);
@@ -40,6 +69,8 @@ export async function signupUserAction(values: unknown): Promise<Res> {
 
   try {
     const hashedPassword = await argon2.hash(password);
+    const adminEmails = await findAdminUserEmailAddresses();
+    const isAdmin = adminEmails.includes(email.toLowerCase());
 
     const newUser = await db
       .insert(users)
@@ -47,11 +78,23 @@ export async function signupUserAction(values: unknown): Promise<Res> {
         name,
         email,
         password: hashedPassword,
+        role: isAdmin ? USER_ROLES.ADMIN : USER_ROLES.USER,
       })
-      .returning({ id: users.id })
+      .returning({
+        id: users.id,
+        email: users.email,
+        emailVerified: users.emailVerified,
+      })
       .then((res) => res[0]);
 
-    console.log({ insertedId: newUser.id });
+    const verificationToken = await createVerificationTokenAction(
+      newUser.email,
+    );
+
+    await sendSignupUserEmail({
+      email: newUser.email,
+      token: verificationToken.token,
+    });
 
     return { success: true };
   } catch (err) {

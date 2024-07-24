@@ -17,9 +17,11 @@ import { Button } from "@/components/ui/button";
 import { signupUserAction } from "@/actions/signup-user-action";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export const SignupForm = () => {
   const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
   const form = useForm<SignupInput>({
     resolver: valibotResolver(SignupSchema),
@@ -32,7 +34,7 @@ export const SignupForm = () => {
     const res = await signupUserAction(values);
 
     if (res.success) {
-      setSuccess(true);
+      router.push("/auth/signup/success");
     } else {
       switch (res.statusCode) {
         case 400:

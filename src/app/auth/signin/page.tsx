@@ -6,6 +6,7 @@ import {
   OAuthSigninButtonsSkeleton,
 } from "@/components/oauth-signin-buttons";
 import { Suspense } from "react";
+import { ForgotPasswordForm } from "./_components/forgot-password-form";
 
 export default function SigninPage() {
   return (
@@ -32,6 +33,9 @@ export default function SigninPage() {
           </Button>{" "}
           to sign up.
         </p>
+
+        {/* Forgot Password Dialog */}
+        <ForgotPasswordForm />
       </div>
     </main>
   );

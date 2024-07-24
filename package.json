@@ -27,6 +27,7 @@
     "lucide-react": "^0.408.0",
     "next": "14.2.5",
     "next-auth": "5.0.0-beta.19",
+    "nodemailer": "^6.9.14",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.52.1",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.15",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "drizzle-kit": "^0.23.0",

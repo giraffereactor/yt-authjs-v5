@@ -37,6 +37,21 @@ export const users = pgTable(
   }),
 );
 
+export const adminUserEmailAddresses = pgTable(
+  "adminUserEmailAddresses",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    email: text("email").notNull(),
+  },
+  (table) => ({
+    adminEmailUniqueIndex: uniqueIndex("adminEmailUniqueIndex").on(
+      lower(table.email),
+    ),
+  }),
+);
+
 export const accounts = pgTable(
   "account",
   {

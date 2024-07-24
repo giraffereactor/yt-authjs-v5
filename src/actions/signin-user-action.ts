@@ -30,6 +30,13 @@ export async function signinUserAction(values: unknown): Promise<Res> {
             error: "Invalid credentials",
             statusCode: 401,
           };
+        case "AccessDenied":
+          return {
+            success: false,
+            error:
+              "Please verify your email, sign up again to resend verification email",
+            statusCode: 401,
+          };
         // custom error
         case "OAuthAccountAlreadyLinked" as AuthError["type"]:
           return {

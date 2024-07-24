@@ -5,15 +5,38 @@ import Github from "next-auth/providers/github";
 import db from "@/drizzle";
 import * as schema from "@/drizzle/schema";
 import { oauthVerifyEmailAction } from "@/actions/oauth-verify-email-action";
+import { USER_ROLES } from "@/lib/constants";
+import type { AdapterUser } from "@auth/core/adapters";
+import { getTableColumns } from "drizzle-orm";
+import { findAdminUserEmailAddresses } from "./resources/admin-user-email-address-queries";
 
 export const authConfig = {
-  adapter: DrizzleAdapter(db, {
-    accountsTable: schema.accounts,
-    usersTable: schema.users,
-    authenticatorsTable: schema.authenticators,
-    sessionsTable: schema.sessions,
-    verificationTokensTable: schema.verificationTokens,
-  }),
+  adapter: {
+    ...DrizzleAdapter(db, {
+      accountsTable: schema.accounts,
+      usersTable: schema.users,
+      authenticatorsTable: schema.authenticators,
+      sessionsTable: schema.sessions,
+      verificationTokensTable: schema.verificationTokens,
+    }),
+    async createUser(data: AdapterUser) {
+      const { id, ...insertData } = data;
+      const hasDefaultId = getTableColumns(schema.users)["id"]["hasDefault"];
+
+      const adminEmails = await findAdminUserEmailAddresses();
+      const isAdmin = adminEmails.includes(insertData.email.toLowerCase());
+
+      if (isAdmin) {
+        insertData.role = isAdmin ? USER_ROLES.ADMIN : USER_ROLES.USER;
+      }
+
+      return db
+        .insert(schema.users)
+        .values(hasDefaultId ? insertData : { ...insertData, id })
+        .returning()
+        .then((res) => res[0]);
+    },
+  },
   session: { strategy: "jwt" },
   secret: process.env.AUTH_SECRET,
   pages: { signIn: "/auth/signin" },
@@ -37,7 +60,7 @@ export const authConfig = {
 
       return true;
     },
-    jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session }) {
       if (trigger === "update") {
         return { ...token, ...session.user };
       }
@@ -63,10 +86,7 @@ export const authConfig = {
       }
 
       if (account?.provider === "credentials") {
-        if (user.emailVerified) {
-          // return true;
-        }
-        return true;
+        if (user.emailVerified) return true;
       }
 
       return false;
